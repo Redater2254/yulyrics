@@ -1,7 +1,7 @@
 # 함께 배포되는 폰트
 
-yulyrics 소스 코드는 MIT 라이선스([`LICENSE`](./LICENSE))지만,
-프로그램에 포함된 폰트는 **각 폰트의 라이선스**를 따릅니다.
+[`LICENSE`](./LICENSE) 의 MIT 라이선스는 yulyrics **소스 코드**에 적용됩니다.
+프로그램에 포함된 폰트는 MIT 가 아니라 **각 폰트의 라이선스**를 따릅니다.
 
 아래 폰트는 모두 **SIL Open Font License 1.1** 이며 재배포가 허용됩니다.
 라이선스 원문은 [`packages/presets/fonts/licenses/`](./packages/presets/fonts/licenses/) 에 폰트별로 들어 있습니다.
