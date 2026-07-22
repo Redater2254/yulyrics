@@ -1,0 +1,26 @@
+{
+  "name": "yulyrics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OBS 브라우저 소스로 송출하는 가사 오버레이 프로그램",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=@yulyrics/overlay && npm run build --workspace=@yulyrics/control",
+    "start": "npm run build && npm run start --workspace=@yulyrics/server",
+    "desktop": "npm run build && npm run start --workspace=@yulyrics/desktop",
+    "dist": "npm run build && npm run dist --workspace=@yulyrics/desktop",
+    "server": "npm run dev --workspace=@yulyrics/server",
+    "watch:overlay": "npm run build:watch --workspace=@yulyrics/overlay",
+    "watch:control": "npm run build:watch --workspace=@yulyrics/control",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

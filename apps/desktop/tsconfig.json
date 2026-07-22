@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "noEmit": true,
+    "paths": {
+      "@yulyrics/server": ["../../packages/server/src/index.ts"],
+      "@yulyrics/server/config": ["../../packages/server/src/config.ts"],
+      "@yulyrics/server/desktop": ["../../packages/server/src/desktop.ts"],
+      "@yulyrics/server/paths": ["../../packages/server/src/paths.ts"],
+      "@yulyrics/core": ["../../packages/core/src/index.ts"],
+      "@yulyrics/presets": ["../../packages/presets/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "build.mjs"]
+}

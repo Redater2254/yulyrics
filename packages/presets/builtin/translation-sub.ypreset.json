@@ -1,0 +1,78 @@
+{
+  "id": "translation-sub",
+  "name": "번역 자막",
+  "author": "yulyrics",
+  "version": 1,
+  "builtin": true,
+  "canvas": { "w": 1920, "h": 1080 },
+
+  "layout": {
+    "mode": "stacked-center",
+    "anchor": "bottom",
+    "offset": { "x": 0, "y": -64 },
+    "maxWidthPct": 92,
+    "lineGap": 8,
+    "blockGap": 20,
+    "linesVisible": 1,
+    "autoFit": true,
+    "autoFitMinScale": 0.55
+  },
+
+  "layers": [
+    {
+      "role": "main",
+      "source": "text",
+      "font": {
+        "family": "Montserrat, Pretendard, 'Malgun Gothic', sans-serif",
+        "sizePx": 44,
+        "weight": 800,
+        "italic": true,
+        "letterSpacing": 0,
+        "lineHeight": 1.2
+      },
+      "fill": "#F2C81E",
+      "stroke": { "color": "#000000", "widthPx": 4 },
+      "shadows": [],
+      "opacity": 1
+    },
+    {
+      "role": "sub",
+      "source": "translation",
+      "font": {
+        "family": "Pretendard, 'Malgun Gothic', sans-serif",
+        "sizePx": 66,
+        "weight": 900,
+        "italic": false,
+        "letterSpacing": -0.01,
+        "lineHeight": 1.2
+      },
+      "fill": "#FFFFFF",
+      "stroke": { "color": "#000000", "widthPx": 6 },
+      "shadows": [{ "x": 0, "y": 3, "blur": 6, "color": "#000000AA" }],
+      "opacity": 1
+    }
+  ],
+
+  "karaoke": {
+    "enabled": false,
+    "mode": "wipe",
+    "unit": "word",
+    "sungFill": "#FFFFFF",
+    "sungStroke": null,
+    "leadMs": 0
+  },
+
+  "animation": {
+    "in": { "type": "fadeUp", "durMs": 180, "easing": "cubic-bezier(.2,.8,.2,1)" },
+    "out": { "type": "fade", "durMs": 150, "easing": "ease-out" }
+  },
+
+  "background": {
+    "type": "none",
+    "color": "#000000AA",
+    "padding": [8, 24, 8, 24],
+    "radius": 10
+  },
+
+  "safeArea": { "top": 48, "right": 64, "bottom": 40, "left": 64 }
+}

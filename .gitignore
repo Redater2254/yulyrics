@@ -1,0 +1,12 @@
+node_modules/
+dist/
+# electron-builder 산출물 (수백 MB — 릴리스로 올릴 것)
+release/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+.env
+.env.local
+
+# 사용자 데이터 (로컬 실행 시 생성)
+/userdata/

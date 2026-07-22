@@ -1,0 +1,47 @@
+{
+  "name": "@yulyrics/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "yulyrics 데스크톱 셸 (트레이 상주 + 전역 단축키)",
+  "author": "Redater2254",
+  "homepage": "https://github.com/Redater2254/yulyrics",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@yulyrics/server": "*"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.2"
+  },
+  "build": {
+    "appId": "app.yulyrics.desktop",
+    "productName": "yulyrics",
+    "electronVersion": "33.4.11",
+    "directories": { "output": "release" },
+    "files": [
+      "dist/**",
+      "assets/**",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": "../overlay/dist", "to": "web/apps/overlay/dist" },
+      { "from": "../control/dist", "to": "web/apps/control/dist" },
+      { "from": "../../packages/presets/fonts", "to": "web/packages/presets/fonts" }
+    ],
+    "win": {
+      "target": ["portable"],
+      "icon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "yulyrics-beta.exe",
+      "requestExecutionLevel": "user"
+    }
+  }
+}

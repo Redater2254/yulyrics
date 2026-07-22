@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>yulyrics</title>
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+    <style>
+      :root {
+        --bg: #14161a;
+        --panel: #1c1f25;
+        --panel-2: #23272e;
+        --line: #2e333b;
+        --text: #e6e8eb;
+        --muted: #8b939f;
+        --accent: #4d9bff;
+        --ok: #3ddc97;
+      }
+      * { box-sizing: border-box; }
+      /*
+       * 창 높이에 딱 맞춘 셸.
+       * 페이지 전체가 스크롤되면 사이드바 아래쪽이 잘려서 안 보이는 요소가 생긴다.
+       * 헤더는 고정하고 좌·우 열이 각자 스크롤하게 해서, 무엇도 손이 닿지 않는 곳으로 가지 않게 한다.
+       */
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 "Pretendard", "Malgun Gothic", system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      /* ---- 스크롤바 (기본 UI 대신 앱 톤에 맞춘 것) ---- */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #363d47 transparent;
+      }
+      ::-webkit-scrollbar { width: 11px; height: 11px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: #363d47;
+        border-radius: 99px;
+        /* 투명 테두리 + background-clip 으로 트랙 쪽에 여백을 만든다 */
+        border: 3px solid transparent;
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover { background: #4a5361; background-clip: content-box; }
+      ::-webkit-scrollbar-thumb:active { background: var(--accent); background-clip: content-box; }
+      ::-webkit-scrollbar-corner { background: transparent; }
+
+      header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 10px 10px 20px; border-bottom: 1px solid var(--line);
+        background: var(--panel); flex-wrap: wrap;
+        /* 데스크톱에서는 헤더가 곧 타이틀바다 — 여기를 잡고 창을 끈다 */
+        -webkit-app-region: drag;
+        user-select: none;
+      }
+      /* 조작 가능한 것은 끌기 영역에서 빼야 클릭이 먹는다 */
+      header button, header code, header .badge { -webkit-app-region: no-drag; }
+
+      /* ---- 창 조작 버튼 (기본 타이틀바 대체) ---- */
+      .winctl { display: flex; gap: 2px; -webkit-app-region: no-drag; }
+      .winctl[hidden] { display: none; }
+      .winctl button {
+        width: 36px; height: 28px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: transparent; border: 0; border-radius: 7px; color: #9aa3af;
+      }
+      .winctl button:hover { background: #2c323b; color: var(--text); }
+      .winctl button.danger:hover { background: #c0392b; color: #fff; }
+      .winctl svg {
+        width: 12px; height: 12px; fill: none; stroke: currentColor;
+        stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
+      }
+      h1 { font-size: 16px; margin: 0 8px 0 0; letter-spacing: -0.02em; }
+      main {
+        flex: 1;
+        min-height: 0; /* 이게 없으면 grid 자식이 넘쳐도 줄어들지 않는다 */
+        display: grid;
+        grid-template-columns: 296px 1fr;
+        gap: 16px;
+        padding: 16px;
+        overflow: hidden;
+      }
+      /* 열마다 따로 스크롤 — 한쪽이 길어져도 다른 쪽이 밀려나지 않는다 */
+      main > div { min-height: 0; overflow-y: auto; padding-right: 4px; }
+
+      section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+      section + section { margin-top: 14px; }
+      h2 { font-size: 12px; margin: 0 0 10px; color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+
+      .url-box { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 300px; }
+      code {
+        flex: 1; background: #0e1013; border: 1px solid var(--line); border-radius: 6px;
+        padding: 6px 10px; font: 12px/1.4 ui-monospace, Consolas, monospace;
+        color: #cfe4ff; overflow-x: auto; white-space: nowrap;
+      }
+      button {
+        background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+        border-radius: 6px; padding: 7px 12px; cursor: pointer; font: inherit; font-size: 13px;
+      }
+      button:hover { border-color: #3f4855; background: #2a2f37; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #05121f; font-weight: 700; }
+      button.primary:hover { background: #6aabff; }
+      button:disabled { opacity: .4; cursor: default; }
+
+      .badge {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+        border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line);
+        font-size: 12px; color: var(--muted);
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #5a616c; }
+      .dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+      ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+      li label, li.song {
+        display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px;
+        cursor: pointer; border: 1px solid transparent; background: var(--panel-2);
+      }
+      li label:hover, li.song:hover { border-color: #3f4855; }
+      li label.active, li.song.active { border-color: var(--accent); background: #1d2a3d; }
+      .tag { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+      /* 곡이 쌓여도 사이드바가 무한정 길어지지 않게 한다 */
+      .song-scroll { max-height: 232px; overflow-y: auto; padding-right: 2px; }
+
+      /* 삭제 버튼은 평소엔 숨겨둔다 — 방송 중 실수로 누르면 곤란하다 */
+      .song .del {
+        background: none; border: 0; color: #5a626d; cursor: pointer;
+        font-size: 15px; line-height: 1; padding: 2px 4px; opacity: 0; transition: opacity .12s;
+      }
+      .song:hover .del { opacity: 1; }
+      .song .del:hover { color: #ff7b6b; background: none; }
+      .song .del.confirm { opacity: 1; color: #ff7b6b; font-size: 12px; }
+
+      .row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+      .row + .row { margin-top: 10px; }
+      .muted { color: var(--muted); font-size: 12px; }
+
+      /* --- 송출 미리보기 --- */
+      .preview-row {
+        display: grid;
+        grid-template-columns: minmax(300px, 580px) 1fr;
+        gap: 14px;
+        align-items: stretch;
+      }
+      @media (max-width: 1180px) {
+        .preview-row { grid-template-columns: 1fr; }
+      }
+      .preview-wrap {
+        position: relative;
+        width: 100%;
+        /* 16:9를 전체 폭으로 두면 화면 절반을 먹는다. 확인용이지 주인공은 아니다. */
+        max-width: 580px;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #0b0d10;
+      }
+      .preview-wrap iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        border: 0;
+        transform-origin: 0 0;
+        pointer-events: none; /* 미리보기를 클릭해도 포커스를 뺏기지 않게 */
+      }
+
+      /*
+       * 스페이스바는 이 창에 포커스가 있을 때만 먹는다.
+       * 안 넘어가는 이유가 포커스인지 아닌지 바로 알 수 있어야 한다.
+       */
+      .focus-chip {
+        margin-left: auto;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        color: var(--muted);
+      }
+      .focus-chip.ready {
+        border-color: #2c6b4f;
+        background: #16281f;
+        color: var(--ok);
+      }
+
+      /* --- 진행 화면 --- */
+      .stage {
+        background: #0e1013; border: 1px solid var(--line); border-radius: 10px;
+        padding: 18px 20px; min-height: 150px;
+        display: flex; flex-direction: column; justify-content: center; gap: 12px;
+      }
+      .cur {
+        font-size: 30px; font-weight: 800; line-height: 1.3; color: #fff;
+        word-break: keep-all;
+      }
+      .cur.empty { color: #4a525d; font-weight: 500; font-size: 20px; }
+      .cur-sub { font-size: 15px; color: #7d8794; margin-top: -4px; }
+      .next { font-size: 19px; color: #656e7a; line-height: 1.3; word-break: keep-all; }
+      .next-label, .cur-label {
+        font-size: 11px; color: #59616c; letter-spacing: .06em; margin-bottom: 2px;
+      }
+      .counter { font: 13px ui-monospace, Consolas, monospace; color: var(--muted); }
+
+      kbd {
+        background: #2a2f37; border: 1px solid #3f4855; border-bottom-width: 2px;
+        border-radius: 5px; padding: 2px 7px; font: 12px ui-monospace, Consolas, monospace;
+        color: #cfd6df;
+      }
+
+      textarea {
+        width: 100%; min-height: 132px; resize: vertical;
+        background: #0e1013; color: var(--text); border: 1px solid var(--line);
+        border-radius: 8px; padding: 11px 13px; font: 14px/1.7 inherit;
+      }
+      input[type="text"] {
+        background: #0e1013; color: var(--text); border: 1px solid var(--line);
+        border-radius: 6px; padding: 7px 10px; font: inherit;
+      }
+      input[type="text"].wide { flex: 1; min-width: 140px; }
+      input[type="range"] { flex: 1; accent-color: var(--accent); min-width: 60px; }
+      select {
+        flex: 1;
+        background: #0e1013;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 8px;
+        font: inherit;
+        font-size: 13px;
+      }
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+      .field > span { color: var(--muted); min-width: 44px; }
+      .field > em {
+        font-style: normal; font-size: 12px; color: var(--muted);
+        min-width: 50px; text-align: right;
+        font-family: ui-monospace, Consolas, monospace;
+      }
+
+      /* --- 도움말 --- */
+      .modal {
+        position: fixed; inset: 0; z-index: 100;
+        background: #000000b0;
+        display: flex; align-items: center; justify-content: center; padding: 24px;
+      }
+      .modal[hidden] { display: none; }
+      .modal-box {
+        background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+        width: min(760px, 100%); max-height: 100%; display: flex; flex-direction: column;
+      }
+      .modal-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 18px; border-bottom: 1px solid var(--line);
+      }
+      .modal-body { padding: 4px 18px 20px; overflow-y: auto; }
+      .modal-body h3 {
+        font-size: 13px; margin: 20px 0 8px; color: var(--accent);
+        letter-spacing: .02em;
+      }
+      .modal-body ol { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.9; }
+      .modal-body .note { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin: 6px 0 0; }
+      .modal-body table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+      .modal-body td { padding: 6px 8px; border-bottom: 1px solid #23272e; vertical-align: top; }
+      .modal-body td:first-child { width: 42%; color: var(--text); }
+      .modal-body td:last-child { color: var(--muted); }
+      .modal-body code {
+        display: inline; padding: 1px 6px; font-size: 12px; white-space: normal;
+      }
+      .modal-body a { color: var(--accent); text-decoration: none; }
+      .modal-body a:hover { text-decoration: underline; }
+
+      /* --- 전역 단축키 --- */
+      .hk { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 13px; }
+      .hk > span { color: var(--muted); min-width: 78px; }
+      .hk-key {
+        flex: 1; text-align: center; cursor: pointer;
+        background: #0e1013; border: 1px solid var(--line); border-radius: 6px;
+        padding: 6px 8px; font: 12px ui-monospace, Consolas, monospace; color: #cfe4ff;
+      }
+      .hk-key:hover { border-color: #3f4855; }
+      .hk-key.capturing { border-color: var(--accent); color: var(--accent); }
+      .hk-key.failed { border-color: #7a3b3b; color: #ff8b7d; }
+      .hk-clear {
+        background: none; border: 0; color: var(--muted); cursor: pointer;
+        font-size: 15px; padding: 2px 6px; line-height: 1;
+      }
+      .hk-clear:hover { color: var(--text); background: none; }
+
+      .lines {
+        max-height: 208px; overflow-y: auto; margin-top: 10px;
+        border: 1px solid var(--line); border-radius: 8px; background: #0e1013; padding: 6px;
+      }
+      .lines .ln {
+        display: flex; gap: 10px; padding: 5px 9px; border-radius: 5px; cursor: pointer;
+        font-size: 13px; color: #97a0ac;
+      }
+      .lines .ln:hover { background: #1a1e24; }
+      .lines .ln.active { background: #1d2a3d; color: #fff; font-weight: 700; }
+      .lines .ln .n { color: #5a626d; font: 11px ui-monospace, Consolas, monospace; min-width: 24px; text-align: right; }
+      .lines .ln.break { color: #4c545e; font-style: italic; }
+
+      details { margin-top: 12px; }
+      summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+      .hint { margin-top: 12px; padding: 11px; border-radius: 8px; background: #191d23; border: 1px solid var(--line); }
+      .hint ol, .hint ul.plain { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+      .hint ul.plain { list-style: disc; display: block; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>yulyrics</h1>
+      <div class="url-box">
+        <span class="muted">OBS URL</span>
+        <code id="obs-url">—</code>
+        <button id="copy-url">복사</button>
+      </div>
+      <span class="badge"><span class="dot" id="conn-dot"></span><span id="conn-text">오버레이 0</span></span>
+      <button id="btn-help">도움말</button>
+
+      <!-- 데스크톱 앱에서만 보인다. 브라우저에는 이미 창 조작 수단이 있다. -->
+      <div class="winctl" id="winctl" hidden>
+        <button id="win-min" title="최소화" aria-label="최소화">
+          <svg viewBox="0 0 12 12"><path d="M2 6h8" /></svg>
+        </button>
+        <button id="win-max" title="최대화" aria-label="최대화">
+          <svg viewBox="0 0 12 12" id="win-max-icon"><rect x="2.5" y="2.5" width="7" height="7" /></svg>
+        </button>
+        <button id="win-close" class="danger" title="닫기" aria-label="닫기">
+          <svg viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="modal" id="help" hidden>
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2 style="margin: 0; font-size: 15px; color: var(--text)">도움말</h2>
+          <button id="help-close">닫기</button>
+        </div>
+        <div class="modal-body">
+          <h3>시작하기</h3>
+          <ol>
+            <li>OBS → 소스 추가 → <b>브라우저</b> → 상단 <b>OBS URL</b> 붙여넣기 (너비 1920 / 높이 1080)</li>
+            <li>「가사 넣기」에 가사를 한 줄에 하나씩 붙여넣고 <b>[가사 적용하고 저장]</b></li>
+            <li><kbd>Ctrl</kbd>+<kbd>Space</kbd> 로 한 줄씩 넘기면 끝</li>
+          </ol>
+          <p class="note">미리 싱크를 찍을 필요가 없습니다. PPT 넘기듯 직접 넘깁니다.</p>
+
+          <h3>가사 입력 문법</h3>
+          <table>
+            <tr><td><code>전에 자주 비행했었잖아</code></td><td>일반 가사 줄</td></tr>
+            <tr><td><code>(간주중)</code> <code>(간주)</code> <code>(전주)</code> <code>(후주)</code> <code>--</code></td><td>화면을 완전히 비웁니다</td></tr>
+            <tr><td><code>가사 || 번역</code></td><td><code>||</code> 뒤는 번역으로 들어갑니다</td></tr>
+          </table>
+          <p class="note">
+            빈 화면 마커는 <b>줄 전체가 괄호일 때만</b> 적용됩니다.
+            <code>내 맘속에 (백보컬) 남아</code> 처럼 가사 안의 괄호는 그대로 나옵니다.<br />
+            로마자 발음은 자동 생성됩니다 (노래방 프리셋). 노래방 프리셋은
+            <b>가사 / 로마자 / 번역</b> 세 줄을 함께 띄우고, 번역이 없는 줄은 그 줄을 그리지 않습니다.
+          </p>
+
+          <h3>파일 불러오기</h3>
+          <p class="note">
+            <code>.lrc</code> <code>.txt</code> 파일을 <b>창 아무 데나 끌어다 놓거나</b> [파일 불러오기]로 엽니다.
+            <code>.lrc</code> 의 시간 태그는 떼어내고 가사만 가져옵니다 —
+            지금은 직접 넘기는 방식이라 타이밍을 쓸 곳이 없습니다.
+          </p>
+
+          <h3>단축키</h3>
+          <table>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Space</kbd></td><td><b>앞으로</b> (다른 창을 보고 있어도 동작)</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd></td><td><b>뒤로</b></td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>→</kbd> / <kbd>Ctrl</kbd>+<kbd>←</kbd></td><td>앞으로 / 뒤로</td></tr>
+            <tr><td><kbd>Space</kbd> <kbd>→</kbd> <kbd>←</kbd> <kbd>Esc</kbd></td><td>이 창 안에서만 동작</td></tr>
+          </table>
+          <p class="note">
+            위 3개는 <b>데스크톱 앱에서만</b> 전역으로 동작합니다. 좌측 「전역 단축키」에서 바꿀 수 있습니다.<br />
+            <b>수식키(Ctrl·Alt·Shift) 없는 조합은 걸 수 없습니다.</b>
+            스페이스바 하나를 전역으로 잡으면 다른 프로그램에서 스페이스 입력이 막히기 때문입니다.
+          </p>
+
+          <h3>프리셋과 효과</h3>
+          <p class="note">
+            프리셋은 자막 모양(폰트·색·배치)이고, 「화면 전환 효과」는 줄이 바뀔 때의 움직임입니다.
+            바꾸면 <b>즉시 송출에 반영되고 저장</b>됩니다.
+            기본 프리셋을 고치면 사용자 사본이 만들어지며, <b>[기본값]</b> 으로 되돌릴 수 있습니다.<br />
+            「단어별」 값을 주면 단어가 순서대로 흘러나옵니다.
+          </p>
+          <p class="note">
+            장면마다 다른 프리셋을 쓰려면 좌측 <b>「프리셋 고정 URL」</b> 을 각각 브라우저 소스로 추가하세요.
+          </p>
+
+          <h3>스트림덱 · 매크로 연동</h3>
+          <p class="note">아래 주소를 호출하면 됩니다 (GET/POST 모두 받습니다).</p>
+          <table>
+            <tr><td><code id="help-next">/api/cursor/next</code></td><td>다음 줄</td></tr>
+            <tr><td><code id="help-prev">/api/cursor/prev</code></td><td>이전 줄</td></tr>
+            <tr><td><code id="help-reset">/api/cursor/reset</code></td><td>처음으로</td></tr>
+            <tr><td><code id="help-hide">/api/state/hidden/toggle</code></td><td>가사 숨김 전환</td></tr>
+          </table>
+
+          <h3>저장 위치</h3>
+          <p class="note">
+            곡·프리셋·설정은 <code>%APPDATA%\yulyrics</code> 에 저장됩니다.<br />
+            USB 등에 넣어 들고 다니려면 <b>exe 옆에 <code>yulyrics-data</code> 폴더를 직접 만들어</b> 두세요.
+            그 폴더가 있을 때만 그쪽에 저장합니다 (앱이 알아서 만들지는 않습니다).
+          </p>
+
+          <h3>잘 안 될 때</h3>
+          <table>
+            <tr>
+              <td>아무리 눌러도 안 넘어감</td>
+              <td>커서가 이미 곡 끝일 수 있습니다. 우측 상단 <code>3 / 12</code> 표시를 확인하고 <kbd>Esc</kbd> 로 되돌리세요.</td>
+            </tr>
+            <tr>
+              <td>OBS에 배경이 보임</td>
+              <td>URL에 <code>?debug=1</code> 이 붙어 있는지 확인하세요. 그건 개발용 체커보드입니다.</td>
+            </tr>
+            <tr>
+              <td>OBS만 예전 화면</td>
+              <td>브라우저 소스 우클릭 → 속성 → <b>「현재 페이지의 캐시 새로고침」</b></td>
+            </tr>
+            <tr>
+              <td>단축키가 「사용 중」</td>
+              <td>다른 프로그램이 그 조합을 쓰고 있습니다. 다른 키로 바꾸세요.</td>
+            </tr>
+            <tr>
+              <td>배지가 <code>OBS 없음</code></td>
+              <td>OBS에 브라우저 소스가 안 붙었거나 URL이 틀렸습니다.</td>
+            </tr>
+          </table>
+
+          <h3>만든 사람</h3>
+          <table>
+            <tr>
+              <td>GitHub</td>
+              <td><a href="https://github.com/Redater2254" target="_blank" rel="noreferrer">github.com/Redater2254</a></td>
+            </tr>
+            <tr>
+              <td>Discord</td>
+              <td><code>lazyyushin</code></td>
+            </tr>
+            <tr>
+              <td>버그 제보 · 건의</td>
+              <td><a href="https://github.com/Redater2254/yulyrics/issues" target="_blank" rel="noreferrer">github.com/Redater2254/yulyrics/issues</a></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div>
+        <!-- 가장 자주 쓰는 것이 맨 위에 있어야 한다. 사이드바가 길어지면 아래는 스크롤 밖으로 나간다. -->
+        <section>
+          <h2>곡 목록</h2>
+          <input type="text" id="song-search" placeholder="곡 검색" style="width: 100%; margin-bottom: 8px" />
+          <ul id="song-list" class="song-scroll"></ul>
+          <p class="muted" id="song-empty" style="margin: 0">저장된 곡이 없습니다.</p>
+        </section>
+
+        <section>
+          <h2>프리셋</h2>
+          <ul id="preset-list"></ul>
+          <details>
+            <summary>프리셋 고정 URL (장면별로 다르게 쓸 때)</summary>
+            <code id="pinned-url" style="margin-top: 8px; display: block">—</code>
+            <button id="copy-pinned" style="margin-top: 8px; width: 100%">고정 URL 복사</button>
+          </details>
+        </section>
+
+        <section>
+          <h2>화면 전환 효과</h2>
+
+          <label class="field">
+            <span>등장</span>
+            <select id="anim-in"></select>
+          </label>
+          <label class="field">
+            <span>퇴장</span>
+            <select id="anim-out"></select>
+          </label>
+          <label class="field">
+            <span>속도</span>
+            <input type="range" id="anim-dur" min="0" max="900" step="20" />
+            <em id="anim-dur-val">220ms</em>
+          </label>
+          <label class="field">
+            <span>단어별</span>
+            <input type="range" id="anim-stagger" min="0" max="150" step="5" />
+            <em id="anim-stagger-val">끄기</em>
+          </label>
+
+          <div class="row" style="margin-top: 10px">
+            <button id="anim-test" style="flex: 1">효과 미리보기</button>
+            <button id="anim-reset">기본값</button>
+          </div>
+          <p class="muted" style="margin: 8px 0 0">
+            바꾸면 송출 화면에 즉시 반영되고 프리셋에 저장됩니다.
+          </p>
+        </section>
+
+        <!-- 데스크톱 앱에서만 보인다. 브라우저에서는 전역 단축키를 걸 방법이 없다. -->
+        <section id="hotkey-section" style="display: none">
+          <h2>전역 단축키</h2>
+          <p class="muted" style="margin: -4px 0 10px">
+            다른 창(OBS 등)을 보고 있어도 동작합니다.
+          </p>
+          <div id="hotkey-list"></div>
+          <label class="field" style="margin-top: 10px">
+            <input type="checkbox" id="tray-toggle" style="min-width: auto" />
+            <span style="min-width: auto; color: var(--text)">닫아도 트레이에 남기기</span>
+          </label>
+        </section>
+
+      </div>
+
+      <div>
+        <section>
+          <div class="row" style="justify-content: space-between; margin-bottom: 10px">
+            <h2 style="margin: 0" id="song-title">진행</h2>
+            <span class="counter" id="counter">— / —</span>
+          </div>
+
+          <!--
+            OBS로 나가는 화면 그대로. 오버레이 페이지를 그대로 끼워 넣었기 때문에
+            "미리보기와 실제 송출이 다르다"는 문제가 원천적으로 생기지 않는다.
+          -->
+          <div class="preview-row">
+            <div class="preview-wrap">
+              <iframe id="preview" src="/overlay?preview=1" title="송출 미리보기"></iframe>
+            </div>
+            <div class="stage" id="stage-box">
+              <div>
+                <div class="cur-label">현재</div>
+                <div class="cur empty" id="cur">시작 전 — 스페이스바를 누르면 첫 줄</div>
+                <div class="cur-sub" id="cur-sub"></div>
+              </div>
+              <div>
+                <div class="next-label">다음</div>
+                <div class="next" id="next">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 12px">
+            <button class="primary" id="btn-next">다음 줄 <kbd>Space</kbd></button>
+            <button id="btn-prev">이전 <kbd>←</kbd></button>
+            <button id="btn-reset">처음으로 <kbd>Esc</kbd></button>
+            <button id="btn-hide">가사 숨기기</button>
+            <span class="focus-chip" id="focus-chip">키 입력 대기</span>
+            <span class="muted" id="mode-label"></span>
+          </div>
+
+          <div class="lines" id="lines"></div>
+        </section>
+
+        <section>
+          <h2>가사 넣기</h2>
+          <div class="row" style="margin-bottom: 9px">
+            <input type="text" id="in-title" class="wide" placeholder="곡 제목" />
+            <input type="text" id="in-artist" class="wide" placeholder="가수 (선택)" />
+          </div>
+          <textarea id="in-lyrics" placeholder="가사를 한 줄에 하나씩 붙여넣으세요.
+
+전에 자주 비행했었잖아
+친구들과 말썽쟁이
+(간주중)
+난 그냥 내 삶을 지탱해 줄 || I just need someone in my life"></textarea>
+          <div class="row" style="margin-top: 9px">
+            <button class="primary" id="btn-apply">가사 적용하고 저장</button>
+            <button id="btn-open-file">파일 불러오기</button>
+            <input type="file" id="file-input" accept=".lrc,.txt,.srt" style="display: none" />
+            <span class="muted"><code style="display:inline;padding:1px 5px">(간주중)</code> 또는 <code style="display:inline;padding:1px 5px">--</code> = 빈 화면 · <code style="display:inline;padding:1px 5px">||</code> 뒤 = 번역</span>
+          </div>
+
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

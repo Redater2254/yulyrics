@@ -1,0 +1,94 @@
+{
+  "id": "karaoke-classic",
+  "name": "노래방 클래식",
+  "author": "yulyrics",
+  "version": 1,
+  "builtin": true,
+  "canvas": { "w": 1920, "h": 1080 },
+
+  "layout": {
+    "mode": "dual-alternate",
+    "anchor": "bottom",
+    "offset": { "x": 0, "y": -70 },
+    "maxWidthPct": 90,
+    "lineGap": 6,
+    "blockGap": 22,
+    "linesVisible": 2,
+    "autoFit": true,
+    "autoFitMinScale": 0.5
+  },
+
+  "layers": [
+    {
+      "role": "main",
+      "source": "text",
+      "font": {
+        "family": "Jua, 'Malgun Gothic', sans-serif",
+        "sizePx": 100,
+        "weight": 400,
+        "italic": false,
+        "letterSpacing": 0.01,
+        "lineHeight": 1.2
+      },
+      "fill": "#B8DFFF",
+      "stroke": { "color": "#1B4FD8", "widthPx": 9 },
+      "shadows": [{ "x": 0, "y": 5, "blur": 10, "color": "#00000055" }],
+      "opacity": 1
+    },
+    {
+      "role": "sub",
+      "source": "romaja",
+      "font": {
+        "family": "Arial, Helvetica, 'Malgun Gothic', sans-serif",
+        "sizePx": 54,
+        "weight": 400,
+        "italic": false,
+        "letterSpacing": 0,
+        "lineHeight": 1.15
+      },
+      "fill": "#F2F0C4",
+      "stroke": { "color": "#4A3A10", "widthPx": 3 },
+      "shadows": [],
+      "opacity": 1
+    },
+    {
+      "role": "sub2",
+      "source": "translation",
+      "font": {
+        "family": "Pretendard, 'Malgun Gothic', sans-serif",
+        "sizePx": 40,
+        "weight": 900,
+        "italic": false,
+        "letterSpacing": -0.01,
+        "lineHeight": 1.15
+      },
+      "fill": "#FFFFFF",
+      "stroke": { "color": "#000000", "widthPx": 4 },
+      "shadows": [{ "x": 0, "y": 2, "blur": 5, "color": "#000000AA" }],
+      "opacity": 0.92
+    }
+  ],
+
+  "karaoke": {
+    "enabled": true,
+    "mode": "wipe",
+    "unit": "word",
+    "sungFill": "#FFFFFF",
+    "sungStroke": "#1B4FD8",
+    "leadMs": 0
+  },
+
+  "animation": {
+    "in": { "type": "fadeUp", "durMs": 240, "easing": "cubic-bezier(.2,.8,.2,1)" },
+    "out": { "type": "fade", "durMs": 180, "easing": "ease-out" }
+  },
+
+  "background": {
+    "type": "none",
+    "color": "#000000AA",
+    "padding": [8, 20, 8, 20],
+    "radius": 8
+  },
+
+  "safeArea": { "top": 48, "right": 70, "bottom": 48, "left": 70 }
+}
