@@ -181,6 +181,13 @@ GET http://127.0.0.1:7788/api/state/hidden/toggle   가사 숨김 전환
 번들 폰트는 전부 **SIL Open Font License 1.1** 이며 라이선스 원문을 함께 담았다.
 프리셋에 시스템 폰트 이름을 직접 적으면 PC에 설치된 폰트도 쓸 수 있다.
 
+## 라이선스
+
+소스 코드는 [MIT](./LICENSE). 자유롭게 쓰고 고치고 배포하셔도 됩니다.
+
+함께 들어 있는 폰트는 각자의 라이선스(전부 SIL OFL 1.1)를 따릅니다 —
+[THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) 참고.
+
 ## 문의
 
 - GitHub — [Redater2254](https://github.com/Redater2254)
